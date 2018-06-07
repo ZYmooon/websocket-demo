@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>chat聊天室</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    main {
+      margin: 0 auto;
+      border: 1px solid #000;
+      text-align: center;
+      width: 410px;
+      height: 500px;
+      overflow-x: hidden;
+      
+      line-height: 30px;
+      text-align: center;
+      overflow:auto;
+    }
+
+    p {
+      text-align: left;
+      margin-left: 10px;
+    }
+
+    span {
+      padding: 2px 10px;
+      background: #ccc;
+      color: white;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+
+    footer {
+
+      text-align: center;
+    }
+
+    input {
+      width: 373px;
+    }
+    ::-webkit-scrollbar {  /*实现滚动条隐藏*/
+            width: 0px;
+        }
+
+    /*  IE兼容
+    HTML {  
+      scrollbar-base-color: #fff;  
+      scrollbar-base-color: #fff;  
+      scrollbar-3dlight-color: #fff;  
+      scrollbar-highlight-color: #fff;  
+      scrollbar-track-color: #fff;  
+      scrollbar-arrow-color: #fff;  
+      scrollbar-shadow-color: #fff;  
+      scrollbar-dark-shadow-color: #fff;  
+    } 
+    */    
+
+  </style>
+</head>
+
+<body>
+  <main>
+  </main>
+  <footer>
+    <input type="text">
+    <button type=”submit”>发送</button>
+  </footer>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let socket = io()
+
+    let input = document.querySelector('footer input')
+    input.focus()
+    socket.on('chat', msg => {
+      let node = document.createElement('p')
+      let timeNode = document.createElement('span')
+
+      let mydate = new Date()
+      let hours = mydate.getHours()
+      let minutes = mydate.getMinutes()
+      let seconds = mydate.getSeconds()
+      let current = hours + ':' + minutes + ':' + seconds
+      node.innerText = msg
+      timeNode.innerText = current
+
+      let main = document.querySelector('main')
+      main.appendChild(timeNode)
+      main.appendChild(node)
+      console.log(msg);
+      main.scrollTop = main.scrollHeight;
+      showMsg(msg)
+    })
+    
+    document.querySelector('footer button').onclick = (e) => {
+
+      if (input.value === '' || input.value === null) {
+        alert('请输入内容')
+        input.focus()
+        return false
+      }
+
+      socket.emit('chat', '周逸', input.value);
+      input.value = ''
+      input.focus()
+
+
+
+    }
+    //实现回车发送消息
+    document.onkeydown = function (e) {
+      var theEvent = window.event || e;
+      var code = theEvent.keyCode || theEvent.which;
+      if (code == 13) {
+        document.querySelector('footer button').onclick()
+        input.focus()
+      }
+    }
+    
+    //消息通知
+    let showMsg = msg =>{
+      if(Notification.permission === 'granted'){
+        let notification = new Notification(msg)
+        console.log(notification);
+        
+      }else if(Notification.permission !== 'denied'){
+        Notification.requestPermission(permission=>{
+            if(permission === 'granted'){
+              let notification = new Notification(msg)
+            }
+        })
+      }
+    }
+  </script>
+</body>
+
+</html>
